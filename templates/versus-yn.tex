@@ -1,0 +1,151 @@
+\documentclass{standalone}
+
+%%%%% INPUT AND LANGUAGE %%%%%
+\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{xspace}
+\usepackage[english]{babel}
+
+%%%%% GENERAL UTILITIES %%%%%
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{comment}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fp}
+
+%%%%% FONTS %%%%%
+\usepackage{cmbright}
+\usepackage[nomath]{lmodern}
+\usepackage{inconsolata}
+\usepackage{bm}
+\DeclareMathAlphabet{\mathsfit}{T1}{\sfdefault}{\mddefault}{\sldefault}
+\SetMathAlphabet{\mathsfit}{bold}{T1}{\sfdefault}{\bfdefault}{\sldefault}
+\newcommand{\mathbif}[1]{\bm{\mathsfit{#1}}}
+
+%%%%% DRAWINGS %%%%%
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{pgfplots}
+\usepgfplotslibrary{colorbrewer}
+\pgfplotsset{
+    compat = 1.15,
+    every tick/.append style = {black, thick},
+}
+
+%%%%% CUSTOM DEFINITIONS %%%%%
+\def\mainsource{PARAMETERS2-DATA-FILENAME}
+\def\plotwidth{PLOT-WIDTH}
+\def\nlowerlimit{N-LOWER-LIMIT}
+\def\nupperlimit{N-UPPER-LIMIT}
+\def\tlowerlimit{T-LOWER-LIMIT}
+\def\tupperlimit{T-UPPER-LIMIT}
+\def\mlowerlimit{M-LOWER-LIMIT}
+\def\mupperlimit{M-UPPER-LIMIT}
+\def\slowerlimit{S-LOWER-LIMIT}
+\def\supperlimit{S-UPPER-LIMIT}
+\def\nreflowerlimit{NREF-LOWER-LIMIT}
+\def\nrefupperlimit{NREF-UPPER-LIMIT}
+\def\nrefsimulated{SIMULATED-NREF}
+\def\testsno{NUMBER-OF-TESTS}
+\def\xlabelsep{-0.10}
+\def\ylabelsep{-0.10}
+\def\paramsep{1cm}
+\def\numsep{5pt}
+
+\begin{document}%
+\pgfdeclareplotmark{plainM}{\fill[draw=none, opacity=0.15, fill=Dark2-A] (0,0) circle [radius=1pt];}%
+\pgfdeclareplotmark{plainT}{\fill[draw=none, opacity=0.15, fill=Dark2-C] (0,0) circle [radius=1pt];}%
+\pgfdeclareplotmark{plainS}{\fill[draw=none, opacity=0.15, fill=Dark2-B] (0,0) circle [radius=1pt];}%
+\pgfdeclareplotmark{plainN}{\fill[draw=none, opacity=0.15, fill=Dark2-D] (0,0) circle [radius=1pt];}%
+\pgfdeclareplotmark{plainNref}{\fill[draw=none, opacity=0.15, fill=Dark2-E] (0,0) circle [radius=1pt];}%
+\begin{tikzpicture}
+    \pgfplotstableread{\mainsource}\data
+    \begin{axis}[
+        name = t0,
+        anchor = south,
+        axis on top,
+        inner sep = \numsep,
+        outer sep = 0pt,
+        width = \plotwidth,
+        height = \plotwidth,
+        line width = 1pt,
+        tickwidth = {5pt},
+        xticklabel pos = top,
+        xtick align = inside,
+        ytick align = inside,
+        scaled y ticks = false,
+        ymin = \nlowerlimit,
+        ymax = \nupperlimit,
+        xmin = \nlowerlimit,
+        xmax = \nupperlimit,
+      ]
+
+      \draw[black!20] (\nlowerlimit, \nlowerlimit) -- (\nupperlimit, \nupperlimit);
+      \addplot+[only marks, mark=plainN] table [x = sn, y = n] {\data};
+      \draw (\nlowerlimit, \nupperlimit) node[anchor=north west, inner sep=5pt] {\Large$n$};
+    \end{axis}
+    \begin{axis}[
+        name = m0,
+        at = {($(t0.east) + (\paramsep,0)$)},
+        anchor = west,
+        axis on top,
+        inner sep = \numsep,
+        outer sep = 0pt,
+        width = \plotwidth,
+        height = \plotwidth,
+        line width = 1pt,
+        tickwidth = {5pt},
+        xticklabel pos = top,
+        xtick align = inside,
+        ytick align = inside,
+        scaled y ticks = false,
+        ymin = \mlowerlimit,
+        ymax = \mupperlimit,
+        xmin = \mlowerlimit,
+        xmax = \mupperlimit,
+      ]
+
+      \draw[black!20] (\mlowerlimit, \mlowerlimit) -- (\mupperlimit, \mupperlimit);
+      \addplot+[only marks, mark=plainM] table [x = sM_0, y = M_0] {\data};
+      \draw (\mlowerlimit, \mupperlimit) node[anchor=north west, inner sep=5pt] {\Large$M_0$};
+    \end{axis}
+    \begin{axis}[
+        name = s0,
+        at = {($(m0.east) + (\paramsep,0)$)},
+        anchor = west,
+        axis on top,
+        inner sep = \numsep,
+        outer sep = 0pt,
+        width = \plotwidth,
+        height = \plotwidth,
+        line width = 1pt,
+        tickwidth = {5pt},
+        xticklabel pos = top,
+        xtick align = inside,
+        ytick align = inside,
+        scaled y ticks = true,
+        ymin = \nreflowerlimit,
+        ymax = \nrefupperlimit,
+        xmin = 0,
+        xmax = \testsno,
+      ]
+
+      \draw[black!20] (0, \nrefsimulated) -- (\testsno, \nrefsimulated);
+      \addplot+[only marks, mark=plainNref] table [x = id, y = N_ref] {\data};
+      \draw (0, \nrefupperlimit) node[anchor=north west, inner sep=5pt] {\Large$N_\mathrm{ref}$};
+    \end{axis}
+
+    \foreach \cindex in {MIDDLE-COMPONENT-INDEXES} {
+        \input{vrow-middle-tm.tex}
+    }
+
+    %KEEP-IF-1C%\def\cindex{LAST-COMPONENT-INDEX}
+    %KEEP-IF-1C%\input{vrow-bottom-tm.tex}
+
+\end{tikzpicture}%
+\end{document} 

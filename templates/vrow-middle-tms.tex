@@ -1,0 +1,78 @@
+    \FPeval{\cmoindex}{clip(\cindex-1)}
+    \begin{axis}[
+        name= t\cindex,
+        at = (t\cmoindex.south),
+        anchor = north,
+        axis on top,
+        inner sep = \numsep,
+        outer sep = 0pt,
+        width = \plotwidth,
+        height = \plotwidth,
+        xmode = log,
+        ymode = log,
+        line width = 1pt,
+        tickwidth = {5pt},
+        xticklabels = {,,},
+        xtick align = inside,
+        ytick align = inside,
+        scaled y ticks = false,
+        ymin = \tlowerlimit,
+        ymax = \tupperlimit,
+        xmin = \tlowerlimit,
+        xmax = \tupperlimit,
+      ]
+
+      \draw[black!20] (\tlowerlimit, \tlowerlimit) -- (\tupperlimit, \tupperlimit);
+      \addplot+[only marks, mark=plainT] table [x = st_\cindex, y = t_\cindex] {\data};
+      \draw (\tlowerlimit, \tupperlimit) node[anchor=north west, inner sep=5pt] {\Large$t_{\cindex}$};
+    \end{axis}
+    \begin{axis}[
+        name = m\cindex,
+        at = (m\cmoindex.south),
+        anchor = north,
+        axis on top,
+        inner sep = \numsep,
+        outer sep = 0pt,
+        width = \plotwidth,
+        height = \plotwidth,
+        line width = 1pt,
+        tickwidth = {5pt},
+        xticklabels = {,,},
+        xtick align = inside,
+        ytick align = inside,
+        scaled y ticks = false,
+        ymin = \mlowerlimit,
+        ymax = \mupperlimit,
+        xmin = \mlowerlimit,
+        xmax = \mupperlimit,
+      ]
+
+      \draw[black!20] (\mlowerlimit, \mlowerlimit) -- (\mupperlimit, \mupperlimit);
+      \addplot+[only marks, mark=plainM] table [x = sM_\cindex, y = M_\cindex] {\data};
+      \draw (\mlowerlimit, \mupperlimit) node[anchor=north west, inner sep=5pt] {\Large$M_{\cindex}$};
+    \end{axis}
+    \begin{axis}[
+        name = s\cindex,
+        at = (s\cmoindex.south),
+        anchor = north,
+        axis on top,
+        inner sep = \numsep,
+        outer sep = 0pt,
+        width = \plotwidth,
+        height = \plotwidth,
+        line width = 1pt,
+        tickwidth = {5pt},
+        xticklabels = {,,},
+        xtick align = inside,
+        ytick align = inside,
+        scaled y ticks = false,
+        ymin = \slowerlimit,
+        ymax = \supperlimit,
+        xmin = \slowerlimit,
+        xmax = \supperlimit,
+      ]
+
+      \draw[black!20] (\slowerlimit, \slowerlimit) -- (\supperlimit, \supperlimit);
+      \addplot+[only marks, mark=plainS] table [x = ss_\cindex, y = s_\cindex] {\data};
+      \draw (\slowerlimit, \supperlimit) node[anchor=north west, inner sep=5pt] {\Large$s_{\cindex}$};
+    \end{axis} 

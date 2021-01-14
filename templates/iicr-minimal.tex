@@ -1,0 +1,110 @@
+\documentclass{standalone}
+
+%%%%% INPUT AND LANGUAGE %%%%%
+\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{xspace}
+\usepackage[english]{babel}
+
+%%%%% GENERAL UTILITIES %%%%%
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{comment}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+
+%%%%% FONTS %%%%%
+\usepackage{cmbright}
+\usepackage[nomath]{lmodern}
+\usepackage{inconsolata}
+\usepackage{bm}
+\DeclareMathAlphabet{\mathsfit}{T1}{\sfdefault}{\mddefault}{\sldefault}
+\SetMathAlphabet{\mathsfit}{bold}{T1}{\sfdefault}{\bfdefault}{\sldefault}
+\newcommand{\mathbif}[1]{\bm{\mathsfit{#1}}}
+
+%%%%% DRAWINGS %%%%%
+\usepackage{tikz}
+\usetikzlibrary{
+    calc,
+    patterns
+}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{
+    colorbrewer
+}
+
+\pgfplotsset{
+    compat = 1.15,
+    every tick/.append style = {black, thick},
+    label style = {minimum height = 1pc},
+    legend image code/.code = {
+        \draw [mark repeat = 2, mark phase = 2]
+            plot coordinates {
+                (0cm,0cm)
+                (0cm,0cm)
+                (0.5cm,0cm)
+            };
+    },
+}
+
+%%%%% CUSTOM DEFINITIONS %%%%%
+\def\mainsource{CURVES-DATA-FILENAME}
+\def\plotwidth{PLOT-WIDTH}
+\def\plotheight{PLOT-HEIGHT}
+\def\xlowerlimit{X-LOWER-LIMIT}
+\def\xupperlimit{X-UPPER-LIMIT}
+\def\yupperlimit{Y-UPPER-LIMIT}
+\def\xlowerdistancelimit{X-LOWER-DIST-LIMIT}
+\def\xupperdistancelimit{X-UPPER-DIST-LIMIT}
+
+\begin{document}%
+\begin{tikzpicture}[
+    /pgfplots/scale only axis,
+    /pgfplots/width=\plotwidth,
+    /pgfplots/height=\plotheight
+    ]%
+    \pgfplotstableread{\mainsource}\data
+    \begin{axis}[
+        axis on top=true,
+        inner sep = 0,
+        outer sep = -1,
+        xmode = log,
+        ymode = normal,
+        line width = 1pt,
+        tickwidth = {5pt},
+        xtick align = inside,
+        ytick align = inside,
+        yticklabels=\empty,
+        xticklabels=\empty,
+        scaled y ticks = false,
+        xmin = \xlowerlimit,
+        xmax = \xupperlimit,
+        ymin = 0,
+        ymax = \yupperlimit,
+        x axis line style = -,
+        y axis line style = -,
+      ]
+
+      \fill[pattern=north east lines, pattern color = black!15]
+        (\xlowerlimit, 0) rectangle (\xlowerdistancelimit, \yupperlimit)
+        (\xupperdistancelimit, 0) rectangle (\xupperlimit, \yupperlimit);
+
+      \foreach \t in SIMULATED-EVENT-TIMES
+        \addplot[Set1-B, ultra thick, draw opacity=0.2, forget plot] coordinates {(\t, 0) (\t, \yupperlimit)};
+
+      \foreach \t in INFERRED-EVENT-TIMES
+        \addplot[Set1-A, ultra thick, draw opacity=0.2, forget plot] coordinates {(\t, 0) (\t, \yupperlimit)};
+
+      \foreach \plotid in {TEST-INDEXES} {
+          \addplot[const plot, ultra thick, Set1-B] table [x = time-\plotid, y = source-iicr-\plotid] {\data};
+          \addplot[const plot, ultra thick, Set1-A] table [x = time-\plotid, y = inferred-iicr-\plotid] {\data};
+      }
+
+    \end{axis}
+\end{tikzpicture}%
+\end{document} 

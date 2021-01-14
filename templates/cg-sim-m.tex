@@ -1,0 +1,159 @@
+\documentclass{standalone}
+
+%%%%% INPUT AND LANGUAGE %%%%%
+\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{xspace}
+\usepackage[english]{babel}
+
+%%%%% GENERAL UTILITIES %%%%%
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{comment}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+
+%%%%% FONTS %%%%%
+\usepackage{cmbright}
+\usepackage[nomath]{lmodern}
+\usepackage{inconsolata}
+\usepackage{bm}
+\DeclareMathAlphabet{\mathsfit}{T1}{\sfdefault}{\mddefault}{\sldefault}
+\SetMathAlphabet{\mathsfit}{bold}{T1}{\sfdefault}{\bfdefault}{\sldefault}
+\newcommand{\mathbif}[1]{\bm{\mathsfit{#1}}}
+
+%%%%% DRAWINGS %%%%%
+\usepackage{tikz}
+\usetikzlibrary{
+    tikzmark,
+    calc
+}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{
+    colorbrewer
+}
+
+\pgfplotsset{
+    compat = 1.15,
+    every tick/.append style = {black, thick},
+    label style = {minimum height = 1pc},
+    legend image code/.code = {
+        \draw [mark repeat = 2, mark phase = 2]
+            plot coordinates {
+                (0cm,0cm)
+                (0cm,0cm)
+                (0.5cm,0cm)
+            };
+    },
+}
+
+%%%%% CUSTOM DEFINITIONS %%%%%
+\def\plotwidth{PLOT-WIDTH} %
+\def\plotheight{PLOT-HEIGHT} %
+\def\mainsource{PARAMETERS-DATA-FILENAME} %
+\def\histsource{HISTOGRAMS-DATA-FILENAME} %
+\def\xlabel{X-AXIS-LABEL} %
+\def\xlowerlimit{X-LOWER-LIMIT}  %
+\def\xupperlimit{X-UPPER-LIMIT} %
+\def\mlowerlimit{M-LOWER-LIMIT} %
+\def\mupperlimit{M-UPPER-LIMIT} %
+\def\numberoftests{NUMBER-OF-TESTS} %
+\def\sourcecoordinates{SOURCE-M-COORDINATES} %
+\def\mylabelsep{8mm}
+
+\begin{document}%
+\begin{tikzpicture}[
+    /pgfplots/scale only axis,
+    /pgfplots/width=\plotwidth,
+    /pgfplots/height=\plotheight
+    ]%
+    \pgfplotstableread{\mainsource}\data%
+    \pgfplotstableread{\histsource}\histdata%
+    \begin{axis}[
+        name = main,
+        anchor = north west,
+        axis on top,
+        inner sep = 0,
+        outer sep = 0,
+        xlabel = \xlabel,
+        y label style = {at={($(axis description cs:0,0.5) + (-\mylabelsep,0mm)$)}},
+        ylabel = {Migration rate},
+        axis lines = left,
+        xmode = log,
+        ymode = log,
+        line width = 1pt,
+        tickwidth = {5pt},
+        xtick align = outside,
+        ytick align = outside,
+        ymin = \mlowerlimit,
+        ymax = \mupperlimit,
+        xmin = \xlowerlimit,
+        xmax = \xupperlimit,
+        x axis line style = -,
+        y axis line style = -,
+      ]
+
+      \pgfplotsinvokeforeach{SIMULATED-TIMES}{ %
+          \draw [ultra thick, dotted, gray!50] (axis cs:#1,\mlowerlimit) -- (axis cs:#1,\mupperlimit);
+      }
+
+      \pgfplotsinvokeforeach{SIMULATED-MIG-RATES}{ %
+          \draw [ultra thick, dotted, gray!50] (axis cs:\xlowerlimit,#1) -- (axis cs:\xupperlimit,#1);
+      }
+
+      \foreach \x in {1, 2, ..., \numberoftests} {
+        \addplot[const plot, ultra thick, color=Dark2-A, draw opacity=0.15] table [x = t_\x, y = M_\x] {\data};
+      }
+
+      %REMOVE-IF-SOURCE%\addplot[const plot, ultra thick, black] coordinates {\sourcecoordinates};
+
+    \end{axis}%
+    % times horizontal histogram
+    \begin{axis}[
+        at = (main.north west),
+        anchor = south west,
+        axis on top,
+        axis x line* = bottom,
+        axis y line = none,
+        line width = 1pt,
+        height = 1cm,
+        xtick = \empty,
+        xmode = log,
+        xmin = \xlowerlimit,
+        xmax = \xupperlimit,
+        ymin = 0,
+      ]
+
+      \addplot[const plot, draw=gray!60, fill=gray!30] table [x = t-bins, y = t-vals] {\histdata}\closedcycle;
+
+    \end{axis}%
+    % migrations vertical histogram
+    \begin{axis}[
+        at = (main.north east),
+        anchor = north west,
+        rotate = -90,
+        axis on top,
+        axis x line* = bottom,
+        axis y line = none,
+        line width = 1pt,
+        x dir = reverse,
+        height = 1cm,
+        width = \plotheight,
+        xtick = \empty,
+        xmode = log,
+        xmin = \mlowerlimit,
+        xmax = \mupperlimit,
+        ymin = 0,
+      ]
+
+      \addplot[const plot, draw=gray!60, fill=gray!30] table [x = m-bins, y = m-vals] {\histdata}\closedcycle;
+
+    \end{axis}
+    \tikzmark{baseline}{(main.north west)};
+\end{tikzpicture}%
+\end{document} 

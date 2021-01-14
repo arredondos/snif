@@ -1,0 +1,265 @@
+\documentclass{standalone}
+
+%%%%% INPUT AND LANGUAGE %%%%%
+\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{xspace}
+\usepackage[english]{babel}
+
+%%%%% GENERAL UTILITIES %%%%%
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{comment}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+
+%%%%% FONTS %%%%%
+\usepackage{cmbright}
+\usepackage[nomath]{lmodern}
+\usepackage{inconsolata}
+\usepackage{bm}
+\DeclareMathAlphabet{\mathsfit}{T1}{\sfdefault}{\mddefault}{\sldefault}
+\SetMathAlphabet{\mathsfit}{bold}{T1}{\sfdefault}{\bfdefault}{\sldefault}
+\newcommand{\mathbif}[1]{\bm{\mathsfit{#1}}}
+
+%%%%% DRAWINGS %%%%%
+\usepackage{tikz}
+\usetikzlibrary{
+    tikzmark,
+    calc,
+}
+\usepackage{pgfplots}
+\usepgfplotslibrary{
+    colorbrewer
+}
+
+\pgfplotsset{
+    compat = 1.15,
+    every tick/.append style = {black, thick},
+    label style = {minimum height = 1pc},
+    legend image code/.code = {
+        \draw [mark repeat = 2, mark phase = 2]
+            plot coordinates {
+                (0cm,0cm)
+                (0cm,0cm)
+                (0.5cm,0cm)
+            };
+    },
+}
+
+%%%%% CUSTOM DEFINITIONS %%%%%
+\def\plotwidth{PLOT-WIDTH}
+\def\plotheight{PLOT-HEIGHT}
+\def\mainsource{PARAMETERS-DATA-FILENAME}
+\def\histsource{HISTOGRAMS-DATA-FILENAME}
+\def\ninferences{INFERENCES-COUNT}
+\def\xlabel{X-AXIS-LABEL}
+\def\xlowerlimit{X-LOWER-LIMIT}
+\def\xupperlimit{X-UPPER-LIMIT}
+\def\mlowerlimit{M-LOWER-LIMIT}
+\def\mupperlimit{M-UPPER-LIMIT}
+\def\slowerlimit{S-LOWER-LIMIT}
+\def\supperlimit{S-UPPER-LIMIT}
+\def\indexes{LIST-OF-INDEXES}
+\def\legendnames{LEGEND-ENTRIES}
+\def\sourceMcoordinates{SOURCE-M-COORDINATES}
+\def\sourceScoordinates{SOURCE-S-COORDINATES}
+\def\sourcelegend{SOURCE-LEGEND-ENTRY}
+\def\mylabelsep{8mm}
+
+\makeatletter
+\protected\def\specialmergetwolists{%
+  \begingroup
+  \@ifstar{\def\cnta{1}\@specialmergetwolists}
+    {\def\cnta{0}\@specialmergetwolists}%
+}
+\def\@specialmergetwolists#1#2#3#4{%
+  \def\tempa##1##2{%
+    \edef##2{%
+      \ifnum\cnta=\@ne\else\expandafter\@firstoftwo\fi
+      \unexpanded\expandafter{##1}%
+    }%
+  }%
+  \tempa{#2}\tempb\tempa{#3}\tempa
+  \def\cnta{0}\def#4{}%
+  \foreach \x in \tempb{%
+    \xdef\cnta{\the\numexpr\cnta+1}%
+    \gdef\cntb{0}%
+    \foreach \y in \tempa{%
+      \xdef\cntb{\the\numexpr\cntb+1}%
+      \ifnum\cntb=\cnta\relax
+        \xdef#4{#4\ifx#4\empty\else,\fi\x#1\y}%
+        \breakforeach
+      \fi
+    }%
+  }%
+  \endgroup
+}
+\makeatother
+
+\begin{document}%
+\begin{tikzpicture}[
+    /pgfplots/scale only axis,
+    /pgfplots/width=\plotwidth,
+    /pgfplots/height=\plotheight
+    ]%
+    \pgfplotstableread{\mainsource}\data%
+    \pgfplotstableread{\histsource}\histdata%
+    \specialmergetwolists*{/}\indexes\legendnames\zipped%
+    \begin{axis}[
+        name = main,
+        axis on top,
+        inner sep = 0,
+        outer sep = 0,
+        ylabel = {Migration rate},
+        y label style = {at={($(axis description cs:0,0.5) + (-\mylabelsep,0mm)$)}},
+        yticklabel pos = left,
+        xmode = log,
+        ymode = log,
+        line width = 1pt,
+        legend cell align = left,
+        legend style = {at = {(0, 1)}, anchor = north west, font=\footnotesize},
+        anchor = north west,
+        tickwidth = {5pt},
+        xmajorticks = false,
+        xminorticks = false,
+        ytick pos = left,
+        xtick pos = top,
+        xticklabels=\empty,
+        xtick align = outside,
+        ytick align = outside,
+        ymin = \mlowerlimit,
+        ymax = \mupperlimit,
+        xmin = \xlowerlimit,
+        xmax = \xupperlimit,
+        x axis line style = -,
+        y axis line style = -,
+        cycle list/Dark2,
+      ]
+
+%REMOVE-IF-SOURCE%      \pgfplotsinvokeforeach{SIMULATED-TIMES}{ %
+%REMOVE-IF-SOURCE%          \draw [ultra thick, dotted, gray!50] (axis cs:#1,\mlowerlimit) -- (axis cs:#1,\mupperlimit);
+%REMOVE-IF-SOURCE%      }
+%REMOVE-IF-SOURCE%      \pgfplotsinvokeforeach{SIMULATED-MIG-RATES}{ %
+%REMOVE-IF-SOURCE%          \draw [ultra thick, dotted, gray!50] (axis cs:\xlowerlimit,#1) -- (axis cs:\xupperlimit,#1);
+%REMOVE-IF-SOURCE%      }
+%REMOVE-IF-SOURCE%      \addplot+[const plot, ultra thick, black] coordinates {\sourceMcoordinates};
+%REMOVE-IF-SOURCE%      \addlegendentryexpanded{\sourcelegend}
+
+      \foreach \x/\y in \zipped {
+        \addplot+[const plot, ultra thick, draw opacity=0.5] table [x = t_\x, y = M_\x] {\data};
+        \addlegendentryexpanded{\y}
+      }
+
+    \end{axis}%
+    \begin{axis}[
+        name = sizes,
+        at = (main.south west),
+        anchor = north west,
+        axis on top,
+        inner sep = 0,
+        outer sep = 0,
+        xlabel = \xlabel,
+        y label style = {at={($(axis description cs:0,0.5) + (-\mylabelsep,0mm)$)}},
+        ytick pos = left,
+        xtick pos = bottom,
+        xticklabel pos = bottom,
+        ylabel = {Relative deme size},
+        yticklabel pos = left,
+        xmode = log,
+        line width = 1pt,
+        anchor = north west,
+        tickwidth = {5pt},
+        xtick align = outside,
+        ytick align = outside,
+        ymin = \slowerlimit,
+        ymax = \supperlimit,
+        xmin = \xlowerlimit,
+        xmax = \xupperlimit,
+        x axis line style = -,
+        y axis line style = -,
+        cycle list/Dark2,
+      ]
+
+%REMOVE-IF-SOURCE%      \pgfplotsinvokeforeach{SIMULATED-TIMES}{ %
+%REMOVE-IF-SOURCE%          \draw [ultra thick, dotted, gray!50] (axis cs:#1,\mlowerlimit) -- (axis cs:#1,\mupperlimit);
+%REMOVE-IF-SOURCE%      }
+%REMOVE-IF-SOURCE%      \pgfplotsinvokeforeach{SIMULATED-SIZES}{ %
+%REMOVE-IF-SOURCE%          \draw [ultra thick, dotted, gray!50] (axis cs:\xlowerlimit,#1) -- (axis cs:\xupperlimit,#1);
+%REMOVE-IF-SOURCE%      }
+%REMOVE-IF-SOURCE%      \addplot+[const plot, ultra thick, black] coordinates {\sourceScoordinates};
+
+      \foreach \x/\y in \zipped {
+        \addplot+[const plot, ultra thick, draw opacity=0.5] table [x = t_\x, y = s_\x] {\data};
+      }
+
+    \end{axis}%
+    % times horizontal histogram
+    \begin{axis}[
+        at = (main.north west),
+        anchor = south west,
+        axis on top,
+        axis x line* = bottom,
+        axis y line = none,
+        line width = 1pt,
+        height = 1cm,
+        xtick = \empty,
+        xmode = log,
+        xmin = \xlowerlimit,
+        xmax = \xupperlimit,
+        ymin = 0,
+      ]
+
+      \addplot[const plot, draw=gray!60, fill=gray!30] table [x = t-bins, y = t-vals] {\histdata}\closedcycle;
+
+    \end{axis}%
+    % migrations vertical histogram
+    \begin{axis}[
+        at = (main.north east),
+        anchor = north west,
+        rotate = -90,
+        axis on top,
+        axis x line* = bottom,
+        axis y line = none,
+        line width = 1pt,
+        x dir = reverse,
+        height = 1cm,
+        width = \plotheight,
+        xtick = \empty,
+        xmode = log,
+        xmin = \mlowerlimit,
+        xmax = \mupperlimit,
+        ymin = 0,
+      ]
+
+      \addplot[const plot, draw=gray!60, fill=gray!30] table [x = m-bins, y = m-vals] {\histdata}\closedcycle;
+
+    \end{axis}%
+    % sizes vertical histogram
+    \begin{axis}[
+        at = (sizes.north east),
+        anchor = north west,
+        rotate = -90,
+        axis on top,
+        axis x line* = bottom,
+        axis y line = none,
+        line width = 1pt,
+        x dir = reverse,
+        height = 1cm,
+        width = \plotheight,
+        xtick = \empty,
+        xmin = \slowerlimit,
+        xmax = \supperlimit,
+        ymin = 0,
+      ]
+
+      \addplot[const plot, draw=gray!60, fill=gray!30] table [x = s-bins, y = s-vals] {\histdata}\closedcycle;
+
+    \end{axis}
+    \tikzmark{baseline}{(main.north west)};
+\end{tikzpicture}%
+\end{document} 
