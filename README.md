@@ -13,6 +13,7 @@ Two first two scripts relate to the inference and plotting of the data, and the 
 -------------------------------
 Guide Structure
 
+```
 1.INFERRING AND PLOTTING THE DATA
 1.1.INFERRING THE DATA
 1.1.1.USING SNIF.py
@@ -30,7 +31,7 @@ Guide Structure
 2.2.1.USING COLLECT.py
 2.2.2.USING CLEAN.py
 3.OTHER ISSUES
-
+```
 
 -------------------------------
 1.INFERRING AND PLOTTING THE DATA
