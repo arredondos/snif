@@ -114,8 +114,10 @@ int smc_problem_outro(string psmc_filename, double mu, bool checkSource) {
 
     double[] readTime, readIICR;
     parsePSMCFile(psmc_filename, mu, readTime, readIICR);    
+    
     constrainData(readTime, readIICR, data_cutoff_low, data_cutoff_high, plotTime, plotIICR);
     constrainData(readTime, readIICR, data_weight_low, data_weight_high, fitTime, fitIICR);
+
     preallocatedModel.allocateDistanceComputation(fitTime);
     if(checkSource) {
         check_for_model();
@@ -160,8 +162,23 @@ void constrainData(double[] time, double[] iicr, double lower, double upper,
 
     immutable frontDrop = time.assumeSorted.lowerBound(lower).length;
     immutable backDrop  = time.assumeSorted.upperBound(upper).length;
-    constrainedTime = time.drop(frontDrop).dropBack(backDrop).array;
-    constrainedIICR = iicr.drop(frontDrop).dropBack(backDrop).array;    
+    
+    if(frontDrop > 0) {
+        constrainedTime = [lower];
+        constrainedIICR = [iicr[frontDrop - 1]];
+    }
+    else {
+        constrainedTime = [];
+        constrainedIICR = [];
+    }
+
+    constrainedTime ~= time.drop(frontDrop).dropBack(backDrop).array;
+    constrainedIICR ~= iicr.drop(frontDrop).dropBack(backDrop).array;    
+
+    if(backDrop > 0) {
+        constrainedTime ~= [upper];
+        constrainedIICR ~= [iicr[$ - backDrop]];
+    }
 }
 
 void logCurve(R)(string name, R curve) {
