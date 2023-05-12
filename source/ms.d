@@ -165,7 +165,7 @@ void generateTsimIICR(double[] samples, double x_low, double x_high, int interva
 	immutable iicr_scale = (referenceSize == 0.0) ? 1.0 : referenceSize;
 	
 	// generate histograms
-    timeVector = GetLogTimeVector(x_low / time_scale, x_high / time_scale, intervals);
+	timeVector = GetLogTimeVector(x_low / time_scale, x_high / time_scale, intervals);
 	auto histogram = getHistogram(assumeSorted(timeVector), samples);
 
 	auto shiftedTimeVector = new double[intervals + 1];
