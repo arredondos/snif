@@ -320,6 +320,22 @@ int load_smc_simulated_problem(int n, double* times_p, double* migrations_p, dou
     simulated_problem_intro(n, times_p, migrations_p, sizes_p, n0);
     return smc_problem_body_and_outro(mu, sequences, sites);
 }
+int load_exact_problem_from_curve(char* filename) {
+    import ms: parseIICRFile;
+    
+    resetProblemGlobals(filename.to!string);
+    sourceModelIsKnown = false;
+    sourceModel = NSNIC.init;
+    double[] readTime, readIICR;
+    
+    parseIICRFile(filename.to!string, readTime, readIICR);    
+    constrainData(readTime, readIICR, data_cutoff_low, data_cutoff_high, plotTime, plotIICR);
+    constrainData(readTime, readIICR, data_weight_low, data_weight_high, fitTime, fitIICR);
+    preallocatedModel.allocateDistanceComputation(fitTime);
+
+    stopwatch.start();
+	return 0;
+}
 
 int begin_round() {
     ++roundCount;

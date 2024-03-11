@@ -9,7 +9,7 @@ from warnings import warn
 import atexit
 
 class SourceType(Enum):
-	PSMC, MSMC, JSON, MSCommand, Simulation = range(5)
+	PSMC, MSMC, JSON, MSCommand, Simulation, IICR = range(6)
 
 class IICRType(Enum):
 	Exact, T_sim, Seq_sim = range(3)
@@ -272,6 +272,14 @@ def infer(
 				)
 			else:
 				raise ValueError("Invalid IICR type string")
+			
+		elif inf.source_type == SourceType.IICR:
+			if inf.IICR_type != IICRType.Exact:
+				raise ValueError(f"Cannot build a {inf.IICR_type} IICR from a curve!")
+			
+			snif_lib.load_exact_problem_from_curve(
+				c_char_p(binary_filename),
+			)
 
 		else:
 			raise ValueError("Invalid data type string")
@@ -749,7 +757,7 @@ def _generate_inference_tag(
 	
 	fn += '_w{:03d}'.format(int(round(100 * distance_parameter)))
 
-	source_strings = ['S', 'S', 'J', 'M', 'X']
+	source_strings = ['S', 'S', 'J', 'M', 'X', 'C']
 	iicr_type_strings = ['Q', 'T', 'S']
 	fn += '_{}{}'.format(
 		source_strings[source_type.value],

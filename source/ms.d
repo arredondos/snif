@@ -8,6 +8,7 @@ import std.algorithm;
 import std.conv;
 import std.string;
 import std.math;
+import std.exception: enforce;
 
 import numeric : GetLogTimeVector;
 import nsnic : Scenario;
@@ -153,6 +154,17 @@ void parsePSMCFile(string psmc_filename, inout double mu, ref double[] samples, 
 	immutable N0 = theta / (4 * mu * s);
 	samples[] *= 2 * N0;
 	lambdas[] *= N0;
+}
+
+///
+void parseIICRFile(string filename, ref double[] time, ref double[] iicr) {
+    auto file = File(filename, "r");
+	auto lines = file.byLineCopy.map!(line => line.chomp).array;
+	file.close();
+
+	time = lines[0].splitter('\t').map!(to!double).array;
+	iicr = lines[1].splitter('\t').map!(to!double).array;
+	enforce(time.length == iicr.length, "Invalid IICR file: arrays length mismatch.");
 }
 
 private:
